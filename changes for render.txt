@@ -1,0 +1,10 @@
+FRONTEND:
+
+- some deps from backend intalled
+- App.js catching err & main render logic trigger after failed refresh
+- rewriting some paths on Render site
+
+BACKEND
+
+- cors changes
+- passforgotUri change

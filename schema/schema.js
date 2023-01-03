@@ -18,7 +18,8 @@ const environment = process.env.NODE_ENV;
 let passforgotUri;
 
 if (environment === "production") {
-  passforgotUri = "https://wikispeedtyping.herokuapp.com/#/passforgot-change/"
+  // passforgotUri = "https://wikispeedtyping.herokuapp.com/#/passforgot-change/"
+  passforgotUri = "https://wikispeedtyping.onrender.com/#/passforgot-change/"
 } else {
   passforgotUri = "http://localhost:3000/passforgot-change/";
 }
