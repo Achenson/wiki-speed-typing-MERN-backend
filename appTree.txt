@@ -1,0 +1,111 @@
+
+====redux: stats & dummy authentication & redux-thunk
+
+
+_defaultText.js -> default text to load in case of fetch error
+./redux -> /reducer: 4reducers
+            
+            actions
+              deleteScore_postAction
+              fetchPostAction
+              updateScore_postAction
+            rootReducer
+            store
+
+<index.js>
+  -ApolloProvider
+  -setting accessToken in Headers
+  -refreshingToken if accessToken expired during app usage
+      <APP/>
+      - loading animation if fetching refresh_token
+      - fetchPostAction -> fetching data from wikiAPI,
+      - disabling wiki button
+        - 
+        <CustomRoute_AuthGuarded/>
+        - 
+        <CustomRoute
+          <Main/>
+          -getStatsQuery -> handling only error
+          -making default stats if notAuthenticated (
+             not crucial, Stats shouldn't be accessed in not authenticated
+          )
+          -keyboard shortcuts,
+          -counter
+          -hints & results & stats (+ setTimerOnSelect) visibility toggling,
+          -focusTextArea
+          -setting live & final results (logic in resultsAndTimerReducer)
+          -updateScore_postAction(func from updateStateMutation hook being passed down)
+            <Display/>
+            - handling text to render
+            - changing parts of text to display
+            - reseting display
+            - array with colorred letters to be passed to WikiDisplay according to mistakes
+            - counting correct, incorrect, all entries
+                <AllRenders/>
+                - rendering most components
+                    <AuthenticationUI> - links for login, register, stats toggle on/off
+                    <UpperUI> - formating timer display
+                    <Hints>
+                    <Profile/> -register -login/ -profile -logout
+                    <WikiDisplay>
+                        <SingleLetter/> - rendering colors of each single letter
+                    <InputArea> - prevent arrow keys, no text selecting
+                    <Controls>
+                    <WikiController/> -setting new random article
+                    <Results> - formating timer display
+                    <LowerUi/>
+                    -stats button
+                    -resutls button
+                      <Stats>
+                      -deleteScore_postAction used here
+                        <SingleStat>
+        />
+        [<AuthNotification/> (present in all routes below!)]
+        <CustomRoute
+          <Register/>
+        />
+        <CustomRoute
+          <Login/>
+        />
+        <CustomRoute
+          <PasswordForgotten/>
+        />
+        <CustomRoute
+          <ForgottenPassChange/>
+          -changing password after receiving Link in mail/>
+        />
+        (must by authenticated to access)
+        <CustomRoute_AuthGuarded
+          <PasswordChange/>
+          -changing password when logged in/>
+        />
+        <CustomRoute_AuthGuarded
+          <DeleteAccount/>
+        />
+        
+        
+
+====== OLD originally - without redux OLD
+_defaultText.js -> default text to load in case of fetch error
+
+<App/> - counter(start, pause/run, reset, results, timer)
+-keyboard shortcuts,
+-hints & results visibility,
+-focusing/unfocusing/disabling elements
+- handling data to display (from Fetch to Display)
+    <Fetch/> -fetching data from wikiAPI, no rendering
+    <Reducer/> -setting/reseting  live & final results 
+        <Display/> -rendering outer App part
+        - handling input/reseting in InputArea
+        -array with colorred letters in WikiDisplay according to mistakes
+        - changing parts of text to display
+        - dispatching action to <Reducer/> for counting correct, incorrect, allEntries 
+            <UpperUI> - formating timer display
+            <WikiDisplay>
+                <SingleLetter/> - rendering colors of each single letter
+            <InputArea> - prevent arrow keys, no text selecting
+            <Controls>
+            <WikiController/> -setting new random article
+            <ResultButton>
+            <Results> - formating timer display
+  

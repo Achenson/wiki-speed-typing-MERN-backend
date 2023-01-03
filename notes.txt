@@ -1,0 +1,254 @@
+DB='mongodb+srv://Achenson:<password>@mongo-for-fcc-13gh5.mongodb.net/graphql_test?retryWrites=true&w=majority'
+
+^ <password> - without this angle brackets!
+
+^graphql_test - name of the db that the document will we saved to! name of the collection will be infered automatically
+
+client -> clone from repo, then hidden folder .git was deleted so this could be one repo consisting of client and server
+
+// useMutation mutate function does not call `onCompleted`!
+ // so onCompleted can only be passed to initial hook
+// workaround: useMutation returns a Promise
+
+schema.js -> promise used, so that resolve function can return a value from Mongoose method,
+which is needed on the pro
+
+testing tokens with postman:
+[body-graphql] 1. login querry to geneterate token, copy the token
+2. [authorisation beaere token] paste token (without ""!)
+3. make protected querry
+no body-pareser being used
+
+===============================
+jwt logic (+ revoking tokens):
+1. user logging in -> 
+->refresh token is stored in a cookie,
+->access token is set in memory(redux store).
+
+2. headers (sent with every request to the server)with accessToken
+ are being set in index.jx client side
+ (in there the access token is being taken from the redux store)
+
+3. Preserving session (still logged in after reload):
+ App.js -> checks is there is a valid refresh token in a cookie by fetching "/refresh_token"
+  (an actual second route in server.js)
+  and logs In with accessToken if everything is OK
+  (another login, so new refreshToken will be stored in a cookie)
+
+4. Handling accessToken expiration during app use -> creating new accessToken if refreshToken is OK
+  plus 
+  "apollo-link-token-refresh" (ApolloLink -> type of middleware only better) in index.js client-side
+
+5. different mutations/queries in schema.js are being protected by isAuth,
+which checks if there is proper accessToken is set in the headers (equivalent of route guarding)
+
+6. logOut -> setting empty string in a cookie instead of token
+
+7. revokingToken: current refresh token won't work 
+
+tokenVersion == 0 when creating user
+when creating refreshToken ->refreshTokens' tokenVersion == user.tokenVerssion
+to invalidate user -> mutation to increment user's tokenVersion in db
+when the user tries to refresh tokens(reloading or after the accessToken runs out),
+/refresh_token path checks if his user.tokenVersion match the version from the refresh token in his cookies
+if not: new accessToken & refreshToken is not being sent
+-user can still use App until accessToken run out (or until he reloads)
+BUT new refreshToken would still be created if the user Logs in again -
+so password has to be changed first
+
+=============================
+Display text rendering logic:
+
+1. passing arrToRender [ [letter, color for the letter], ... ]... 
+  - used to color each letter properly
+  1.5 results & making colors: if the textArea test is getting longer(so no calculations when using backspace):
+  - compare last letter of textArea to corresponding letter in WikiDisplay
+  - assign proper color & resultCorrect or resultIncorrect
+2. ... & arrOfPartialText [array containing arrays containing parts of whole text] & indexOfPartialTextArr
+- to properly display ellipsis & page counter
+to WikiDisplay
+
+============================
+Heroku deployment:
+
+0.heroku account
+1. server.js:
+- const PORT = process.env.PORT || 4000;
+- if (process.env.NODE_ENV === "production") {
+  app.use(express.static("client/build"));
+} [heroku will autumaticaly config its vars so that NODE_ENV === "production"]
+
+2. scripts, so npm run build in the client run automatically on heroku
+// script "heroku-postbuild" <- this exact name!
+// script "start" <- also for heroku
+
+3. heroku site -> setting -> config vars -> add the save vars as in .env
+
+4. HashRouter instead of BrowserRouter!!! otherwise you won't be able to refresh routes other than main,
+and link send by email(password change) won't work
+
+5. heroku login -> heroku create... -> git push heroku master
+
+6.integrating with github -> heroku site -> deploy
+
+7. app.js, index.js, schema.js -> logic dependent on if app is in production or development mode
+
+8 !!!!! store.js redux.devtools -> uncomment when in development!!!!
+
+issues:
+DONE 1. React: Login <Route> warning DONE
+DONE 2. warning: SingleStat "key" DONE
+DONE 3. problems with undefined for disable button itp? DONE (if statements moved to useEffect)
+DONE 4. changePassword! other repos won't work! DONE
+DONE 5. clicking Login it the article is not loaded yet couse errors DONE
+DONE 6. checking if email is already taken: is in Register component, but it would be better if it was in schema.js?
+but problems with addingScore to user automatically DONE (partially checked in schema, partially on the frontend)
+XX 7. noCache in getStatsQuerry in Stats.js -> only temp solution? 
+https://github.com/apollographql/react-apollo/issues/2202 XX noCache deleted
+-X 8. revokingRefreshTokens -> inc tokenVersion about 3 times instead of 1?? X- issue, but not breaking
+DONE 9. revoikingRefreshTokens -> no refreshing, but what about login? DONE
+DONE 10. same-site cookies? !! (frontend console) DONE
+DONE 11. error when the timer reaches 0 and the user is not logged in DONE
+XXX 12. app starting - wrong route? XXx won't matter in production?
+DONE 13. issue when words between 1 & 2 screen are serperated by space. DONE whiteSpace: `break-spaces`
+DONE 14. [after back from PasswordChange or deleteAccount] offline when logout: "database connection error" clash with Results DONE
+DONE 16. [after back from PasswordChange or deleteAccount] offline when logout: nothing happens when clicking on Stats DONE isStatsButtonClickable added
+DONE 17. not displaying current user in Profile DONE
+-X18. sometimes typed character don't start counter at first! InputArea left -> only happens
+sometime & only if shift isn't pressed at the beginning(unlikely)X- 
+-X 19. Sometime the textArea is not resetting itself? X- currently cannot replicate the issue
+
+to do:
+DONE 1. move graphql queries to different file DONE
+DONE 2. set headers in apollo (index.js in client) DONE
+DONE 3. context, req, res? DONE
+DONE 3.5 all route guarding DONE?
+DONE 3.55. Test guarding with short lived TOKEN DONE
+DONE 3.6 more error displays when redirected to login DONE
+DONE 4. login -> res send cookie with refresh token DONE
+DONE (5. revoking tokens (at the end?) ) TOKEN
+DONE 5. refresh token api route DONE
+DONE 5.5. token is being refreshed, but the login does not persist yet DONE
+DONE 6. persisiting session after refresh -> in the top of the App, refresh token will be used DONE
+DONE 6.5 persisting session after accessToken expired (migrating from apollo-boost to apollo-client with apollo-link!) DONE
+DONE 7. put (check how to come with proper secret: string min. 32 length, the longer the better) secrets in .env file DONE 
+DONE 8. [old problem?] changing stats don't change timer setting automatically. DONE (changing Stats change timer, but only after
+stats are closed)
+DONE 10. token will require only ID, not email? DONE
+XXX 11. changing module.export to imports? XXX
+DONE [optional] 12. createrefreshToken in a new file 1:15:00 DONE
+DONE 12. check: network-only policy for useQuery?DONE https://medium.com/@galen.corey/understanding-apollo-fetch-policies-705b5ad71980
+no-cache policy in Profile & Stats
+"Apollo Client's fetch policy is cache-first, which means it checks the cache to see if the result is there before making a network request.
+"The fetch policy tells Apollo whether to prioritize getting the most recent data from the server or getting a faster response from the cache. 
+DONE 13. style initiall loading in the App DONE
+DONE 13.5 initiall loading -> delay it? DONE
+DONE 14 clear deleteScore postaction! DONE
+DONE 15. commentOut Test (testing isAuth) in the end DONE 
+DONE 16. change accessToken expiration in the end DONE
+DONE 17. notes(above) -> document all the jwt logic (also  revoking tokens) DONE
+DONE 18. fill all useEffect deps DONE
+DONE 19. Deployment? DONE
+DONE 19.5 write Deployment logic DONE
+XXX 20. [optional] make 2 files out of schema? (resolvers &  ...) XX in a next project
+DONE 21. [optional] show authenticated user name(see jwt video) DONE
+DONE 22. password retrieval system? DONE 
+XXX 22. email confirmation system?XXX password retrieval will suffice
+XXX 23. redux -> importing actions instead of strings? XXX use in next project
+XXX 24. merge Main & Display? XXX 
+DONE 25. delete unused components (2? Fetch & Main old version) DONE
+DONE 26. Clean props in Main & Display DONE
+DONE 27. 2 components out of Display? DONE AllRenders added
+DONE 28. helmet, securtiy DONE
+DONE 29. email or username, login consistency (+ proper checking in addUser in schema) DONE
+DONE 30. concurrent start in dev mode DONE npm-run-all used instead
+DONE 31. check JWT video comments -> changes? DONE (cookieParser only in one route, proper cookie exp date)
+DONE 32. clean passed props in components DONE AllRenders cleaned, more component connectet do store
+DONE 33. more time options DONE
+XXX 34. function imports consistency backend XXX es6 modules still exp in node?
+DONE 35. profile insead of stats in authenticationUI DONE
+DONE 36. change password DONE
+DONE 37. delete account DONE
+DONE 38. consistency - Register (& Login) can have less store connection same as PasswordChange? + DONE
+DONE 38.25. Register & Login reseting each other -> more logical code needed DONE 
+DONE 38.5. reset state when first mounts or when unmounting consistency (Login, register) DONe
+XXX 39. PasswordChange, Login - css classes instead of inline? XXX
+DONE 40. "x" in Stats? DONE instead -> closing stats by clicking wiki display
+DONE 41. clean Main props DONE
+DONE 42. test closing/opening components when the timer is running! (State ?Stats? doensn't work properly?) DONE
+DONE 43. About text somewhere in Hints or in Header? DONE
+DONE 43.25 Hints & Stats toggling each other DONE
+DONE 43.5 animationa on "?" on start? DONE
+DONE 44. test routes when typed in address DONE CustomRoutes & CustomRoutes_AuthGuarded
+XX score (for Stats) ->new Error when not authenticated not used; XX
+DONE 44.5. proper route guarding! in schema.js DONE route guarding for most queries that requires to be logged in
+(except for score query for stats, but it is OK to browse stats even if session expired)
+DONE 45. final test on chrome DONE
+DONE 46. schema - async consistency? DONE
+XXX 47. hot module reload (instead of default live reload that req. refreshing)? XXX in a next project
+-- react-hot-loader && react fast refresh...
+XX 48. check redis video XX
+DONE 49. authData token expiration not needed? DONE
+DONE 50. better password validation across the app? Register, changePassword, changePasswordAfterForgot DONE
+DONE 51. clean PasswordChange & PassRetrival redux connection DONE
+DONE 52. passwordRetrieval - better name? component name & header DONE
+DONE 53. PasswordForgotten - disabling button DONE
+DONE 54. try catch consistency - try catch everywhere? DONE try catch deleted, err handled client side
+DONE 55. Login - not looking good? DONE
+DONE 56. test app without net connection - mutations DONE
+DONE 56.5 test app without net connection - test usage when logged in DONE
+DONE 57. changePassword - "failed to update password" <- more specific? DONE
+DONE 58. all console warnings DONE
+DONE 59. closing Stats should not reset timer! DONE
+DONE 60. pausing on clicking profile DONE
+DONE 61. Stats working consistency in profile * lowerUI DONE
+DONE 3. clean unused store connections in the End (Register, PasswordForgot...) DONE
+DONE 64. PasswordForgot error messages & disabling btn problems (btn disabled if error set) DONE
+DONE 65. redux: login & register clean up DONE
+DONE 66. check npm packages for vulnerabilities DONE
+DONE 67. bring back loginError store connection -> for updateStats! DONE
+xxx 68. how to pass info from backend other then null & properType! optional Types? xxx check in the future?
+xx for now logic based on user object is usedx
+DONE 69. consistency -> changePassword & deleteAccount does not redirect to Login if notAuth, but addScore(in updateScore post action) does DONE
+DONE 70. passwordForgot email message DONE
+DONE 71. uninstall unused packages from package.json [ioredis, body-parser, express-session, passport, passport-local, DONE
+loadsh -> for testSchema, not deleted, uuid, uuidv4]
+DONE 72. ForgottenPassChange -> add session expired error DONE
+DONE 73. loading animation -> start & stop at "..." DONE
+DONE 74. clear Stats props (...and others?) DONE 
+DONE 74.5 change props to proper var names? DONE
+DONE 75. check info on other speed typing apps DONE
+DONE 76. write down Display text rendering logic DONE
+DONE 77. clean mongodb atlas database (but preserve ID for Test.js) DONE
+DONE 78. make list of changes for next project: DONE
+Redux: action types as variables, mapDispatchToProps -> imported action variables instead of writing whole funcions
+Apollo: schema.js divided to Types & Resolvers
+Apollo: schema -> different types returning, for better err handling
+Hot module reloadinh
+ES modules in node
+handle mutation accessable by admin only somehow?
+-X 79. revokeToken mutation -> should be protected somehow?? X-
+DONE 80. clean comments. DONE
+DONE 81. clear console logs DONE
+DONE 82. appTree modify DONE
+XXX 83. test models & test schemas XXX left as it is
+DONE 84. changeLog file client DONE
+DONE 85. CPM instead of KPMs DONE
+DONE 86. change error counting -> do not count corrected errors! BUT count it still for accuracy? DONE
+DONE 87. make live results show the same as finalResults when the timer is finished DONE
+DONE 88. change Results -> displaying unfixed mistakes, change tooltips text DONE
+DONE 89. resultsMaker func -> almost duplicate code! DONE
+DONE 90. tooltips height DONE
+
+tesing schema.js -> change accessToken to few seconds, delete refresh token cookie
+
+apollo structure:
+
+in App:
+updating stats after counter reaches 0 -> passing addScore to  !!==updateScor_postAction==!!, where getStatsQuerry is refetched
+
+in Stats:
+getStatsQuery for setting redux state - stats state is being used in Stats for deleting (moved from App)
+updating stats after deleting current stats, refetching getStatsQuery
+
+in Register: adding new user and adding empty score right away (addNewUser_postAction not used anymore!)
